@@ -1,0 +1,30 @@
+package com.sal3awy.isalm.rssreader.rss.model.local;
+
+
+import android.arch.lifecycle.LiveData;
+import android.arch.persistence.room.Dao;
+import android.arch.persistence.room.Insert;
+import android.arch.persistence.room.Query;
+
+import com.sal3awy.isalm.rssreader.rss.model.entities.Article;
+
+import java.util.List;
+
+import static android.arch.persistence.room.OnConflictStrategy.REPLACE;
+
+@Dao
+public interface ArticlesDao {
+
+    @Insert(onConflict = REPLACE)
+    void saveArticle(Article article);
+
+    @Insert(onConflict = REPLACE)
+    void saveArticle(List<Article> articles);
+
+    @Query("SELECT * FROM article  WHERE article.providerLink = :providerLink")
+    LiveData<List<Article>> getArticles(String providerLink);
+
+    @Query("DELETE FROM article WHERE article.providerLink = :providerLink")
+    void deleteByProvider(String providerLink);
+
+}
