@@ -3,6 +3,7 @@ package com.sal3awy.isalm.rssreader.dagger.application;
 import com.google.gson.FieldNamingPolicy;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
+import com.jakewharton.retrofit2.adapter.rxjava2.RxJava2CallAdapterFactory;
 
 import java.util.Locale;
 import java.util.concurrent.Executor;
@@ -64,6 +65,7 @@ public class NetworkModule {
         return new Retrofit.Builder()
                 .baseUrl("https://github.com")
                 .client(okHttpClient)
+                .addCallAdapterFactory(RxJava2CallAdapterFactory.create())
                 .addConverterFactory(RssConverterFactory.Companion.create())
                 .build();
     }

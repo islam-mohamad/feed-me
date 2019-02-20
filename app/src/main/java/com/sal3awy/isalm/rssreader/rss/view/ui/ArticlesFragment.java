@@ -85,7 +85,12 @@ public class ArticlesFragment extends Fragment implements ArticlesCallback {
     @Override
     public void onActivityCreated(@Nullable Bundle savedInstanceState) {
         super.onActivityCreated(savedInstanceState);
+        observeLoading();
         getArticles();
+    }
+
+    private void observeLoading() {
+//        viewModel.getIsLoading().
     }
 
     private DiffUtil.ItemCallback<Article> diffCallback = new DiffUtil.ItemCallback<Article>() {

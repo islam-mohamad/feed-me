@@ -1,11 +1,8 @@
 package com.sal3awy.isalm.rssreader.rss.model;
 
-import android.arch.lifecycle.LiveData;
-import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 
 import com.sal3awy.isalm.rssreader.rss.model.entities.Article;
-import com.sal3awy.isalm.rssreader.rss.model.entities.Provider;
 import com.sal3awy.isalm.rssreader.rss.model.local.ArticlesDao;
 import com.sal3awy.isalm.rssreader.rss.model.remote.RssService;
 
@@ -15,11 +12,12 @@ import java.util.concurrent.Executor;
 
 import javax.inject.Inject;
 
-import me.toptas.rssconverter.RssFeed;
+import io.reactivex.Flowable;
+import io.reactivex.Single;
+import io.reactivex.android.schedulers.AndroidSchedulers;
+import io.reactivex.functions.Consumer;
+import io.reactivex.schedulers.Schedulers;
 import me.toptas.rssconverter.RssItem;
-import retrofit2.Call;
-import retrofit2.Callback;
-import retrofit2.Response;
 
 public class ArticlesRepo {
     private RssService rssService;
@@ -35,27 +33,25 @@ public class ArticlesRepo {
     }
 
 
-    public LiveData<List<Article>> getArticles(String providerLink) {
-        rssService.getRss(providerLink).enqueue(new Callback<RssFeed>() {
-            @Override
-            public void onResponse(@NonNull Call<RssFeed> call, @NonNull Response<RssFeed> response) {
-                if (response.isSuccessful()) {
-                    List<Article> articles = new ArrayList<>();
-                    for (RssItem rssItem : response.body().getItems()) {
-                        Article article = new Article(rssItem, providerLink);
-                        articles.add(article);
-                    }
-                    executor.execute(() -> articlesDao.saveArticle(articles));
-                }
-            }
+    public Flowable<List<Article>> getArticles(String providerLink) {
 
-            @Override
-            public void onFailure(@NonNull Call<RssFeed> call, @NonNull Throwable t) {
-                t.getStackTrace();
-            }
-        });
-
-
-        return articlesDao.getArticles(providerLink);
+        return Single.mergeDelayError(rssService.getRss(providerLink)
+                        .map(rssFeed -> {
+                            List<Article> articles = new ArrayList<>();
+                            for (RssItem rssItem : rssFeed.getItems()) {
+                                Article article = new Article(rssItem, providerLink);
+                                articles.add(article);
+                            }
+                            return articles;
+                        })
+                        .doOnSuccess(new Consumer<List<Article>>() {
+                            @Override
+                            public void accept(List<Article> articles) throws Exception {
+                                executor.execute(() -> articlesDao.saveArticle(articles));
+                            }
+                        }).subscribeOn(Schedulers.io())
+                        .observeOn(AndroidSchedulers.mainThread()),
+                articlesDao.getArticles(providerLink).subscribeOn(Schedulers.io()).observeOn(AndroidSchedulers.mainThread())
+        );
     }
 }

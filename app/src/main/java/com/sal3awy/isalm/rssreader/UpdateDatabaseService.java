@@ -1,6 +1,5 @@
 package com.sal3awy.isalm.rssreader;
 
-import android.app.job.JobParameters;
 import android.arch.lifecycle.LiveData;
 import android.arch.lifecycle.Observer;
 import android.support.annotation.Nullable;

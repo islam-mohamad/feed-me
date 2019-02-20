@@ -1,7 +1,6 @@
 package com.sal3awy.isalm.rssreader.rss.model.local;
 
 
-import android.arch.lifecycle.LiveData;
 import android.arch.persistence.room.Dao;
 import android.arch.persistence.room.Insert;
 import android.arch.persistence.room.Query;
@@ -9,6 +8,8 @@ import android.arch.persistence.room.Query;
 import com.sal3awy.isalm.rssreader.rss.model.entities.Article;
 
 import java.util.List;
+
+import io.reactivex.Single;
 
 import static android.arch.persistence.room.OnConflictStrategy.REPLACE;
 
@@ -22,7 +23,7 @@ public interface ArticlesDao {
     void saveArticle(List<Article> articles);
 
     @Query("SELECT * FROM article  WHERE article.providerLink = :providerLink")
-    LiveData<List<Article>> getArticles(String providerLink);
+    Single<List<Article>> getArticles(String providerLink);
 
     @Query("DELETE FROM article WHERE article.providerLink = :providerLink")
     void deleteByProvider(String providerLink);
