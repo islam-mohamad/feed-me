@@ -1,5 +1,7 @@
 package com.sal3awy.isalm.rssreader.utils;
 
+import android.arch.lifecycle.LiveData;
+import android.arch.lifecycle.MutableLiveData;
 import android.arch.lifecycle.ViewModel;
 import android.databinding.ObservableBoolean;
 import java.lang.ref.WeakReference;
@@ -8,13 +10,16 @@ import io.reactivex.disposables.CompositeDisposable;
 public abstract class BaseViewModel extends ViewModel {
 
 
-    private final ObservableBoolean mIsLoading = new ObservableBoolean(false);
+    private final MutableLiveData<Boolean> mIsLoading = new MutableLiveData<>();
+    private final MutableLiveData<String> mErrorMessage = new MutableLiveData<>();
 
 
     private CompositeDisposable mCompositeDisposable;
 
     public BaseViewModel() {
         this.mCompositeDisposable = new CompositeDisposable();
+        this.mIsLoading.setValue(false);
+        this.mErrorMessage.setValue("");
     }
 
     @Override
@@ -27,11 +32,19 @@ public abstract class BaseViewModel extends ViewModel {
         return mCompositeDisposable;
     }
 
-    public ObservableBoolean getIsLoading() {
+    public LiveData<Boolean> getIsLoading() {
         return mIsLoading;
     }
 
     public void setIsLoading(boolean isLoading) {
-        mIsLoading.set(isLoading);
+        mIsLoading.setValue(isLoading);
+    }
+
+    public LiveData<String> getErrorMessage() {
+        return mErrorMessage;
+    }
+
+    public void setErrorMessage(String errorMessage) {
+        mErrorMessage.setValue(errorMessage);
     }
 }

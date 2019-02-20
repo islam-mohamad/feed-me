@@ -60,6 +60,32 @@ public class ProvidersFragment extends Fragment implements ProvidersCallback {
 
 
     @Override
+    public void onCreate(@Nullable Bundle savedInstanceState) {
+        super.onCreate(savedInstanceState);
+        observeLoading();
+        observeErrorMessage();
+        getProviders();
+    }
+
+    private void observeErrorMessage() {
+        viewModel.getErrorMessage().observe(this, new Observer<String>() {
+            @Override
+            public void onChanged(@Nullable String message) {
+
+            }
+        });
+    }
+
+    private void observeLoading() {
+        viewModel.getIsLoading().observe(this, new Observer<Boolean>() {
+            @Override
+            public void onChanged(@Nullable Boolean isLoading) {
+
+            }
+        });
+    }
+
+    @Override
     public void onAttach(Context context) {
         super.onAttach(context);
         if (context instanceof Navigator) {
@@ -84,12 +110,6 @@ public class ProvidersFragment extends Fragment implements ProvidersCallback {
         setUpRecyclerView();
         setupAddRssDialog();
         return binding.getRoot();
-    }
-
-    @Override
-    public void onActivityCreated(@Nullable Bundle savedInstanceState) {
-        super.onActivityCreated(savedInstanceState);
-        getProviders();
     }
 
     private DiffUtil.ItemCallback<Provider> diffCallback = new DiffUtil.ItemCallback<Provider>() {
@@ -171,7 +191,7 @@ public class ProvidersFragment extends Fragment implements ProvidersCallback {
                     etLink.requestFocus();
                     return;
                 }
-                if(!link.matches("^(http|https)://.*$")){
+                if (!link.matches("^(http|https)://.*$")) {
                     etLink.setError(getString(R.string._no_http));
                     etLink.requestFocus();
                     return;

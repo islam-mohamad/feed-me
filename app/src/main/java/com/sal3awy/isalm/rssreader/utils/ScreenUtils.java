@@ -8,7 +8,6 @@ import android.view.WindowManager;
 public final class ScreenUtils {
 
     private ScreenUtils() {
-        // This class is not publicly instantiable
     }
 
     public static int getScreenHeight(Context context) {

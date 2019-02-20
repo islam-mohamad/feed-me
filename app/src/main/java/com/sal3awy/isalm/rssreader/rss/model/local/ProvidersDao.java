@@ -1,7 +1,6 @@
 package com.sal3awy.isalm.rssreader.rss.model.local;
 
 
-import android.arch.lifecycle.LiveData;
 import android.arch.persistence.room.Dao;
 import android.arch.persistence.room.Delete;
 import android.arch.persistence.room.Insert;
@@ -11,20 +10,23 @@ import com.sal3awy.isalm.rssreader.rss.model.entities.Provider;
 
 import java.util.List;
 
+import io.reactivex.Completable;
+import io.reactivex.Single;
+
 import static android.arch.persistence.room.OnConflictStrategy.REPLACE;
 
 @Dao
 public interface ProvidersDao {
 
     @Insert(onConflict = REPLACE)
-    void saveProvider(Provider provider);
+    Completable saveProvider(Provider provider);
 
     @Insert(onConflict = REPLACE)
-    void saveProvidersList(List<Provider> providers);
+    Completable saveProvidersList(List<Provider> providers);
 
     @Delete
-    void deleteProvider(Provider provider);
+    Completable deleteProvider(Provider provider);
 
     @Query("SELECT * FROM Provider")
-    LiveData<List<Provider>> getProviders();
+    Single<List<Provider>> getProviders();
 }

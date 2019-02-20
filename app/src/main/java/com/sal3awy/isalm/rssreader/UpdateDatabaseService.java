@@ -1,9 +1,6 @@
 package com.sal3awy.isalm.rssreader;
 
-import android.arch.lifecycle.LiveData;
-import android.arch.lifecycle.Observer;
-import android.support.annotation.Nullable;
-
+import com.firebase.jobdispatcher.JobParameters;
 import com.firebase.jobdispatcher.JobService;
 import com.sal3awy.isalm.rssreader.dagger.updateservice.DaggerUpdateServiceComponent;
 import com.sal3awy.isalm.rssreader.dagger.updateservice.UpdateServiceComponent;
@@ -18,6 +15,8 @@ import java.util.List;
 import javax.inject.Inject;
 
 import io.reactivex.Single;
+import io.reactivex.SingleObserver;
+import io.reactivex.disposables.Disposable;
 import io.reactivex.schedulers.Schedulers;
 
 public class UpdateDatabaseService extends JobService {
@@ -26,6 +25,8 @@ public class UpdateDatabaseService extends JobService {
     ArticlesRepo articlesRepo;
     @Inject
     ProvidersRepo providersRepo;
+
+    private Disposable disposable;
 
     private List<Provider> providerList = new ArrayList<>();
 
@@ -40,49 +41,40 @@ public class UpdateDatabaseService extends JobService {
         component.inject(this);
     }
 
-    /*
-    public boolean onStartJob(JobParameters jobParameters) {
-        LiveData<List<Provider>> providersLiveData = providersRepo.getProviders();
-        providersLiveData.observeForever(new Observer<List<Provider>>() {
-            @Override
-            public void onChanged(@Nullable List<Provider> providers) {
-                if (providers != null) {
-                    providerList.addAll(providers);
-                    Single.just(providerList).flattenAsObservable(list -> providerList).doOnNext(provider -> articlesRepo.getArticles(provider.getRssLink()))
-                            .subscribeOn(Schedulers.io())
-                            .subscribe();
-                    providersLiveData.removeObserver(this);
-                }
-            }
-        });
+    @Override
+    public boolean onStartJob(JobParameters job) {
+        providersRepo.getProviders()
+                .subscribeOn(Schedulers.io())
+                .observeOn(Schedulers.io())
+                .subscribe(new SingleObserver<List<Provider>>() {
+                    @Override
+                    public void onSubscribe(Disposable d) {
+                        UpdateDatabaseService.this.disposable = d;
+                    }
+
+                    @Override
+                    public void onSuccess(List<Provider> providers) {
+                        if (providers != null) {
+                            providerList.addAll(providers);
+                            Single.just(providerList).flattenAsObservable(list -> providerList).doOnNext(provider -> articlesRepo.getArticles(provider.getRssLink()))
+                                    .subscribeOn(Schedulers.io())
+                                    .subscribe();
+                        }
+                    }
+
+                    @Override
+                    public void onError(Throwable e) {
+
+                    }
+                });
         return false;
     }
 
     @Override
-    public boolean onStopJob(JobParameters jobParameters) {
-        return false;
-    }*/
-
-    @Override
-    public boolean onStartJob(com.firebase.jobdispatcher.JobParameters job) {
-        LiveData<List<Provider>> providersLiveData = providersRepo.getProviders();
-        providersLiveData.observeForever(new Observer<List<Provider>>() {
-            @Override
-            public void onChanged(@Nullable List<Provider> providers) {
-                if (providers != null) {
-                    providerList.addAll(providers);
-                    Single.just(providerList).flattenAsObservable(list -> providerList).doOnNext(provider -> articlesRepo.getArticles(provider.getRssLink()))
-                            .subscribeOn(Schedulers.io())
-                            .subscribe();
-                    providersLiveData.removeObserver(this);
-                }
-            }
-        });
-        return false;
-    }
-
-    @Override
-    public boolean onStopJob(com.firebase.jobdispatcher.JobParameters job) {
+    public boolean onStopJob(JobParameters job) {
+        if (disposable != null) {
+            disposable.dispose();
+        }
         return false;
     }
 }

@@ -51,6 +51,7 @@ public class ArticlesFragment extends Fragment implements ArticlesCallback {
         super.onCreate(savedInstanceState);
         if (getArguments() != null) {
             providerLink = getArguments().getString(PROVIDER_KEY);
+            getArticles();
         }
     }
 
@@ -74,6 +75,7 @@ public class ArticlesFragment extends Fragment implements ArticlesCallback {
 
     }
 
+
     @Override
     public View onCreateView(@NonNull LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
@@ -85,12 +87,7 @@ public class ArticlesFragment extends Fragment implements ArticlesCallback {
     @Override
     public void onActivityCreated(@Nullable Bundle savedInstanceState) {
         super.onActivityCreated(savedInstanceState);
-        observeLoading();
-        getArticles();
-    }
-
-    private void observeLoading() {
-//        viewModel.getIsLoading().
+//        getArticles();
     }
 
     private DiffUtil.ItemCallback<Article> diffCallback = new DiffUtil.ItemCallback<Article>() {

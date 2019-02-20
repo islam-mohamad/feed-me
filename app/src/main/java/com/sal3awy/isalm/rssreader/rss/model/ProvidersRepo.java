@@ -1,7 +1,5 @@
 package com.sal3awy.isalm.rssreader.rss.model;
 
-import android.arch.lifecycle.LiveData;
-
 import com.sal3awy.isalm.rssreader.rss.model.entities.Provider;
 import com.sal3awy.isalm.rssreader.rss.model.local.ProvidersDao;
 
@@ -9,6 +7,12 @@ import java.util.List;
 import java.util.concurrent.Executor;
 
 import javax.inject.Inject;
+
+import io.reactivex.Completable;
+import io.reactivex.Scheduler;
+import io.reactivex.Single;
+import io.reactivex.android.schedulers.AndroidSchedulers;
+import io.reactivex.schedulers.Schedulers;
 
 public class ProvidersRepo {
     private ProvidersDao providersDao;
@@ -21,15 +25,21 @@ public class ProvidersRepo {
 
     }
 
-    public LiveData<List<Provider>> getProviders() {
-        return providersDao.getProviders();
+    public Single<List<Provider>> getProviders() {
+        return providersDao.getProviders()
+                .subscribeOn(Schedulers.io())
+                .observeOn(AndroidSchedulers.mainThread());
     }
 
-    public void addProvider(Provider provider) {
-        executor.execute(() -> providersDao.saveProvider(provider));
+    public Completable addProvider(Provider provider) {
+        return providersDao.saveProvider(provider)
+                .subscribeOn(Schedulers.io())
+                .observeOn(AndroidSchedulers.mainThread());
     }
 
-    public void deleteProvider(Provider provider) {
-        executor.execute(() -> providersDao.deleteProvider(provider));
+    public Completable deleteProvider(Provider provider) {
+        return providersDao.deleteProvider(provider)
+                .subscribeOn(Schedulers.io())
+                .observeOn(AndroidSchedulers.mainThread());
     }
 }
