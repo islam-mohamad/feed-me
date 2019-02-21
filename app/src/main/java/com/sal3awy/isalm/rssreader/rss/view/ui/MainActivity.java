@@ -1,26 +1,27 @@
 package com.sal3awy.isalm.rssreader.rss.view.ui;
 
-import android.databinding.DataBindingUtil;
 import android.os.Bundle;
 import android.support.v4.app.FragmentManager;
-import android.support.v7.app.AppCompatActivity;
 
 import com.sal3awy.isalm.rssreader.R;
 import com.sal3awy.isalm.rssreader.databinding.ActivityMainBinding;
 import com.sal3awy.isalm.rssreader.rss.model.entities.Provider;
 import com.sal3awy.isalm.rssreader.rss.view.callback.Navigator;
+import com.sal3awy.isalm.rssreader.base.BaseActivity;
 
-public class MainActivity extends AppCompatActivity implements Navigator {
+public class MainActivity extends BaseActivity<ActivityMainBinding> implements Navigator {
 
-    private ActivityMainBinding binding;
     private ProvidersFragment providersFragment;
+
+    @Override
+    public int getLayoutId() {
+        return R.layout.activity_main;
+    }
 
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        binding = DataBindingUtil.setContentView(this, R.layout.activity_main);
-
         providersFragment = new ProvidersFragment();
         FragmentManager fragmentManager = getSupportFragmentManager();
         fragmentManager.beginTransaction()

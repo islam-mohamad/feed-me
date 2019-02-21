@@ -3,11 +3,9 @@ package com.sal3awy.isalm.rssreader.rss.view.ui;
 
 import android.arch.lifecycle.Observer;
 import android.content.Context;
-import android.databinding.DataBindingUtil;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
-import android.support.v4.app.Fragment;
 import android.support.v4.widget.SwipeRefreshLayout;
 import android.support.v7.app.AlertDialog;
 import android.support.v7.util.DiffUtil;
@@ -18,7 +16,6 @@ import android.text.TextUtils;
 import android.util.Patterns;
 import android.view.LayoutInflater;
 import android.view.View;
-import android.view.ViewGroup;
 import android.widget.Button;
 import android.widget.EditText;
 
@@ -35,6 +32,7 @@ import com.sal3awy.isalm.rssreader.rss.model.entities.Provider;
 import com.sal3awy.isalm.rssreader.rss.view.callback.Navigator;
 import com.sal3awy.isalm.rssreader.rss.view.callback.ProvidersCallback;
 import com.sal3awy.isalm.rssreader.rss.viewmodel.ProvidersViewModel;
+import com.sal3awy.isalm.rssreader.base.BaseFragment;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -42,14 +40,13 @@ import java.util.List;
 import javax.inject.Inject;
 
 
-public class ProvidersFragment extends Fragment implements ProvidersCallback {
+public class ProvidersFragment extends BaseFragment<FragmentProvidersBinding> implements ProvidersCallback {
 
     @Inject
     ProvidersViewModel viewModel;
     @Inject
     Gson gson;
 
-    private FragmentProvidersBinding binding;
     private ArrayList<Provider> providerList;
     private AppAdapter<Provider> mAdapter;
     private Navigator navigator;
@@ -71,7 +68,9 @@ public class ProvidersFragment extends Fragment implements ProvidersCallback {
         viewModel.getErrorMessage().observe(this, new Observer<String>() {
             @Override
             public void onChanged(@Nullable String message) {
-
+                if (!TextUtils.isEmpty(message)) {
+                    showSnakeBar(message);
+                }
             }
         });
     }
@@ -80,9 +79,18 @@ public class ProvidersFragment extends Fragment implements ProvidersCallback {
         viewModel.getIsLoading().observe(this, new Observer<Boolean>() {
             @Override
             public void onChanged(@Nullable Boolean isLoading) {
-
+                if (isLoading != null && isLoading) {
+                    showLoading();
+                } else {
+                    hideLoading();
+                }
             }
         });
+    }
+
+    @Override
+    public int getLayoutId() {
+        return R.layout.fragment_providers;
     }
 
     @Override
@@ -102,14 +110,11 @@ public class ProvidersFragment extends Fragment implements ProvidersCallback {
     }
 
     @Override
-    public View onCreateView(@NonNull LayoutInflater inflater, ViewGroup container,
-                             Bundle savedInstanceState) {
-
-        binding = DataBindingUtil.inflate(inflater, R.layout.fragment_providers, container, false);
-        binding.setView(this);
+    public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
+        super.onViewCreated(view, savedInstanceState);
+        getViewDataBinding().setView(this);
         setUpRecyclerView();
         setupAddRssDialog();
-        return binding.getRoot();
     }
 
     private DiffUtil.ItemCallback<Provider> diffCallback = new DiffUtil.ItemCallback<Provider>() {
@@ -126,7 +131,7 @@ public class ProvidersFragment extends Fragment implements ProvidersCallback {
     };
 
     private void setUpRecyclerView() {
-        RecyclerView recyclerView = binding.recyclerViewProviders;
+        RecyclerView recyclerView = getViewDataBinding().recyclerViewProviders;
         LinearLayoutManager lm = new LinearLayoutManager(getContext());
         recyclerView.setLayoutManager(lm);
         recyclerView.setHasFixedSize(true);
@@ -148,7 +153,7 @@ public class ProvidersFragment extends Fragment implements ProvidersCallback {
 
         }).attachToRecyclerView(recyclerView);
 
-        binding.swipe.setOnRefreshListener(new SwipeRefreshLayout.OnRefreshListener() {
+        getViewDataBinding().swipe.setOnRefreshListener(new SwipeRefreshLayout.OnRefreshListener() {
             @Override
             public void onRefresh() {
                 getProviders();
@@ -209,8 +214,8 @@ public class ProvidersFragment extends Fragment implements ProvidersCallback {
 
     Observer<List<Provider>> providersObserver = providers -> {
         if (providers != null) {
-            if (binding.swipe.isRefreshing()) {
-                binding.swipe.setRefreshing(false);
+            if (getViewDataBinding().swipe.isRefreshing()) {
+                getViewDataBinding().swipe.setRefreshing(false);
             }
             providerList.clear();
             providerList.addAll(providers);

@@ -9,14 +9,15 @@ import com.sal3awy.isalm.rssreader.rss.model.ArticlesRepo;
 import com.sal3awy.isalm.rssreader.rss.model.ProvidersRepo;
 import com.sal3awy.isalm.rssreader.rss.model.entities.Provider;
 
+import org.reactivestreams.Subscription;
+
 import java.util.ArrayList;
 import java.util.List;
 
 import javax.inject.Inject;
 
+import io.reactivex.FlowableSubscriber;
 import io.reactivex.Single;
-import io.reactivex.SingleObserver;
-import io.reactivex.disposables.Disposable;
 import io.reactivex.schedulers.Schedulers;
 
 public class UpdateDatabaseService extends JobService {
@@ -26,7 +27,7 @@ public class UpdateDatabaseService extends JobService {
     @Inject
     ProvidersRepo providersRepo;
 
-    private Disposable disposable;
+    private Subscription subscription;
 
     private List<Provider> providerList = new ArrayList<>();
 
@@ -46,14 +47,14 @@ public class UpdateDatabaseService extends JobService {
         providersRepo.getProviders()
                 .subscribeOn(Schedulers.io())
                 .observeOn(Schedulers.io())
-                .subscribe(new SingleObserver<List<Provider>>() {
+                .subscribe(new FlowableSubscriber<List<Provider>>() {
                     @Override
-                    public void onSubscribe(Disposable d) {
-                        UpdateDatabaseService.this.disposable = d;
+                    public void onSubscribe(Subscription s) {
+                        UpdateDatabaseService.this.subscription = s;
                     }
 
                     @Override
-                    public void onSuccess(List<Provider> providers) {
+                    public void onNext(List<Provider> providers) {
                         if (providers != null) {
                             providerList.addAll(providers);
                             Single.just(providerList).flattenAsObservable(list -> providerList).doOnNext(provider -> articlesRepo.getArticles(provider.getRssLink()))
@@ -63,7 +64,12 @@ public class UpdateDatabaseService extends JobService {
                     }
 
                     @Override
-                    public void onError(Throwable e) {
+                    public void onError(Throwable t) {
+
+                    }
+
+                    @Override
+                    public void onComplete() {
 
                     }
                 });
@@ -72,8 +78,8 @@ public class UpdateDatabaseService extends JobService {
 
     @Override
     public boolean onStopJob(JobParameters job) {
-        if (disposable != null) {
-            disposable.dispose();
+        if (subscription != null) {
+            subscription.cancel();
         }
         return false;
     }

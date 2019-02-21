@@ -7,9 +7,11 @@ import android.arch.persistence.room.Room;
 import android.arch.persistence.room.RoomDatabase;
 import android.content.Context;
 import android.support.annotation.NonNull;
+import android.util.Log;
 
 import com.sal3awy.isalm.rssreader.rss.model.entities.Article;
 import com.sal3awy.isalm.rssreader.rss.model.entities.Provider;
+import com.sal3awy.isalm.rssreader.utils.AppConstants;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -29,13 +31,22 @@ public abstract class RSSDatabase extends RoomDatabase {
     public static synchronized RSSDatabase getInstance(Context context) {
         if (instance == null) {
             instance = Room.databaseBuilder(context.getApplicationContext(),
-                    RSSDatabase.class, "rss_database")
+                    RSSDatabase.class, AppConstants.DB_NAME)
                     .fallbackToDestructiveMigration()
                     .addCallback(new Callback() {
                         @Override
                         public void onCreate(@NonNull SupportSQLiteDatabase db) {
                             super.onCreate(db);
-                            Executors.newSingleThreadScheduledExecutor().execute(() -> getInstance(context).providersDao().saveProvidersList(populateData()));
+                            Executors.newSingleThreadScheduledExecutor()
+                                    .execute(new Runnable() {
+                                        @Override
+                                        public void run() {
+                                            List<Long> list = getInstance(context).providersDao().saveProvidersList(populateData());
+                                            Log.e("database","Size: "+ list.size()+"");
+                                        }
+                                    });
+//                            Executors.newSingleThreadScheduledExecutor()
+//                                    .execute(() -> getInstance(context).providersDao().saveProvidersList(populateData()));
                         }
                     })
                     .build();

@@ -11,6 +11,8 @@ import com.sal3awy.isalm.rssreader.rss.model.entities.Provider;
 import java.util.List;
 
 import io.reactivex.Completable;
+import io.reactivex.Flowable;
+import io.reactivex.Observable;
 import io.reactivex.Single;
 
 import static android.arch.persistence.room.OnConflictStrategy.REPLACE;
@@ -19,14 +21,14 @@ import static android.arch.persistence.room.OnConflictStrategy.REPLACE;
 public interface ProvidersDao {
 
     @Insert(onConflict = REPLACE)
-    Completable saveProvider(Provider provider);
+    long saveProvider(Provider provider);
 
     @Insert(onConflict = REPLACE)
-    Completable saveProvidersList(List<Provider> providers);
+    List<Long> saveProvidersList(List<Provider> providers);
 
     @Delete
-    Completable deleteProvider(Provider provider);
+    int deleteProvider(Provider provider);
 
     @Query("SELECT * FROM Provider")
-    Single<List<Provider>> getProviders();
+    Flowable<List<Provider>> getProviders();
 }

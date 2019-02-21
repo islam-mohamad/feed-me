@@ -2,15 +2,14 @@ package com.sal3awy.isalm.rssreader.rss.viewmodel;
 
 import android.arch.lifecycle.LiveData;
 import android.arch.lifecycle.MutableLiveData;
-import android.arch.lifecycle.ViewModel;
 
 import com.sal3awy.isalm.rssreader.rss.model.ProvidersRepo;
 import com.sal3awy.isalm.rssreader.rss.model.entities.Provider;
-import com.sal3awy.isalm.rssreader.utils.BaseViewModel;
+import com.sal3awy.isalm.rssreader.base.BaseViewModel;
 
 import java.util.List;
 
-import io.reactivex.observers.DisposableCompletableObserver;
+import io.reactivex.observers.DisposableObserver;
 import io.reactivex.observers.DisposableSingleObserver;
 import io.reactivex.subscribers.DisposableSubscriber;
 
@@ -25,27 +24,32 @@ public class ProvidersViewModel extends BaseViewModel {
 
     public LiveData<List<Provider>> getProviders() {
         setIsLoading(true);
-        getCompositeDisposable()
-                .add(repo.getProviders().subscribeWith(new DisposableSingleObserver<List<Provider>>() {
-                    @Override
-                    public void onSuccess(List<Provider> providers) {
-                        setIsLoading(false);
-                        providersList.setValue(providers);
-                    }
+        getCompositeDisposable().add(repo.getProviders().subscribeWith(new DisposableSubscriber<List<Provider>>() {
+            @Override
+            public void onNext(List<Provider> providers) {
+                setIsLoading(false);
+                providersList.setValue(providers);
+            }
 
-                    @Override
-                    public void onError(Throwable e) {
-                        setIsLoading(false);
-                    }
-                }));
+            @Override
+            public void onError(Throwable t) {
+                setIsLoading(false);
+                setErrorMessage(t.getMessage()+"");
+            }
+
+            @Override
+            public void onComplete() {
+                setIsLoading(false);
+            }
+        }));
         return providersList;
     }
 
     public void deleteProvider(Provider provider) {
         setIsLoading(true);
-        getCompositeDisposable().add(repo.deleteProvider(provider).subscribeWith(new DisposableCompletableObserver() {
+        getCompositeDisposable().add(repo.deleteProvider(provider).subscribeWith(new DisposableSingleObserver<Integer>() {
             @Override
-            public void onComplete() {
+            public void onSuccess(Integer integer) {
                 setIsLoading(false);
             }
 
@@ -60,9 +64,9 @@ public class ProvidersViewModel extends BaseViewModel {
 
     public void addProvider(Provider provider) {
         setIsLoading(true);
-        getCompositeDisposable().add(repo.addProvider(provider).subscribeWith(new DisposableCompletableObserver() {
+        getCompositeDisposable().add(repo.addProvider(provider).subscribeWith(new DisposableSingleObserver<Long>() {
             @Override
-            public void onComplete() {
+            public void onSuccess(Long i) {
                 setIsLoading(false);
             }
 

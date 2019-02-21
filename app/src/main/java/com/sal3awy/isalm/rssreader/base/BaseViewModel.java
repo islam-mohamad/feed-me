@@ -1,4 +1,4 @@
-package com.sal3awy.isalm.rssreader.utils;
+package com.sal3awy.isalm.rssreader.base;
 
 import android.arch.lifecycle.LiveData;
 import android.arch.lifecycle.MutableLiveData;
