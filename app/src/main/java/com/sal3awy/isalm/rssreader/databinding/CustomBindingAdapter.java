@@ -3,7 +3,10 @@ package com.sal3awy.isalm.rssreader.databinding;
 import android.databinding.BindingAdapter;
 import android.graphics.Typeface;
 import android.text.TextUtils;
+import android.text.TextWatcher;
+import android.util.Log;
 import android.view.View;
+import android.widget.EditText;
 import android.widget.ImageView;
 import android.widget.TextView;
 
@@ -26,4 +29,23 @@ public class CustomBindingAdapter {
             ((TextView) view).setTypeface(Typeface.createFromAsset(view.getContext().getAssets(), type));
         }
     }
+
+    @BindingAdapter("watcher")
+    public static void bindTextWatcher(EditText editText, TextWatcher textWatcher) {
+        editText.addTextChangedListener(textWatcher);
+    }
+
+    @BindingAdapter("error")
+    public static void bindError(TextView textView, int resId) {
+        Log.e("resId", ""+resId);
+        if (resId > 0) {
+            textView.setText(textView.getContext().getString(resId));
+            textView.setVisibility(View.VISIBLE);
+        }
+        else {
+            textView.setText("");
+            textView.setVisibility(View.GONE);
+        }
+    }
+
 }

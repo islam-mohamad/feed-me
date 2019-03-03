@@ -40,7 +40,7 @@ import java.util.List;
 import javax.inject.Inject;
 
 
-public class ProvidersFragment extends BaseFragment<FragmentProvidersBinding> implements ProvidersCallback {
+public class ProvidersFragment extends BaseFragment<FragmentProvidersBinding, ProvidersViewModel> implements ProvidersCallback {
 
     @Inject
     ProvidersViewModel viewModel;
@@ -59,38 +59,17 @@ public class ProvidersFragment extends BaseFragment<FragmentProvidersBinding> im
     @Override
     public void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        observeLoading();
-        observeErrorMessage();
         getProviders();
-    }
-
-    private void observeErrorMessage() {
-        viewModel.getErrorMessage().observe(this, new Observer<String>() {
-            @Override
-            public void onChanged(@Nullable String message) {
-                if (!TextUtils.isEmpty(message)) {
-                    showSnakeBar(message);
-                }
-            }
-        });
-    }
-
-    private void observeLoading() {
-        viewModel.getIsLoading().observe(this, new Observer<Boolean>() {
-            @Override
-            public void onChanged(@Nullable Boolean isLoading) {
-                if (isLoading != null && isLoading) {
-                    showLoading();
-                } else {
-                    hideLoading();
-                }
-            }
-        });
     }
 
     @Override
     public int getLayoutId() {
         return R.layout.fragment_providers;
+    }
+
+    @Override
+    public ProvidersViewModel getViewModel() {
+        return viewModel;
     }
 
     @Override
@@ -167,6 +146,7 @@ public class ProvidersFragment extends BaseFragment<FragmentProvidersBinding> im
             LayoutInflater inflater = this.getLayoutInflater();
             View dialogView = inflater.inflate(R.layout.dialog_add_providers, null);
             DialogAddProvidersBinding addProvidersBinding = DialogAddProvidersBinding.bind(dialogView);
+            addProvidersBinding.setViewModel(viewModel);
             builder.setView(dialogView);
 
             final EditText etName = addProvidersBinding.etName;
@@ -174,38 +154,40 @@ public class ProvidersFragment extends BaseFragment<FragmentProvidersBinding> im
             final Button btnAdd = addProvidersBinding.btnAdd;
 
             btnAdd.setOnClickListener(view -> {
-                String name = etName.getText().toString();
-                String link = etLink.getText().toString();
-                if (TextUtils.isEmpty(name)) {
-                    etName.setError(getString(R.string.required));
+//                String name = etName.getText().toString();
+//                String link = etLink.getText().toString();
+//                if (TextUtils.isEmpty(name)) {
+//                    etName.setError(getString(R.string.required));
+//                    etName.requestFocus();
+//                    return;
+//                }
+//                if (name.length() < 3) {
+//                    etName.setError(getString(R.string.invalid));
+//                    etName.requestFocus();
+//                    return;
+//                }
+//                if (TextUtils.isEmpty(link)) {
+//                    etLink.setError(getString(R.string.required));
+//                    etLink.requestFocus();
+//                    return;
+//                }
+//                if (!Patterns.WEB_URL.matcher(link).matches()) {
+//                    etLink.setError(getString(R.string.invalid));
+//                    etLink.requestFocus();
+//                    return;
+//                }
+//                if (!link.matches("^(http|https)://.*$")) {
+//                    etLink.setError(getString(R.string._no_http));
+//                    etLink.requestFocus();
+//                    return;
+//                }
+                if(viewModel.isDataValid()){
+                    addDialog.dismiss();
+                    viewModel.addProvider(new Provider(etLink.getText().toString(), etName.getText().toString()));
+                    etName.setText("");
+                    etLink.setText("");
                     etName.requestFocus();
-                    return;
                 }
-                if (name.length() < 3) {
-                    etName.setError(getString(R.string.invalid));
-                    etName.requestFocus();
-                    return;
-                }
-                if (TextUtils.isEmpty(link)) {
-                    etLink.setError(getString(R.string.required));
-                    etLink.requestFocus();
-                    return;
-                }
-                if (!Patterns.WEB_URL.matcher(link).matches()) {
-                    etLink.setError(getString(R.string.invalid));
-                    etLink.requestFocus();
-                    return;
-                }
-                if (!link.matches("^(http|https)://.*$")) {
-                    etLink.setError(getString(R.string._no_http));
-                    etLink.requestFocus();
-                    return;
-                }
-                addDialog.dismiss();
-                viewModel.addProvider(new Provider(etLink.getText().toString(), etName.getText().toString()));
-                etName.setText("");
-                etLink.setText("");
-                etName.requestFocus();
             });
 
             addDialog = builder.create();

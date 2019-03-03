@@ -3,15 +3,19 @@ package com.sal3awy.isalm.rssreader.utils;
 import android.annotation.SuppressLint;
 import android.app.Dialog;
 import android.app.ProgressDialog;
+import android.arch.persistence.room.util.StringUtil;
 import android.content.Context;
 import android.content.res.AssetManager;
 import android.graphics.Color;
 import android.graphics.drawable.ColorDrawable;
 import android.provider.Settings;
+import android.text.TextUtils;
 import android.util.Patterns;
 import android.view.Window;
 
 import com.sal3awy.isalm.rssreader.R;
+
+import org.w3c.dom.Text;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -41,6 +45,28 @@ public final class CommonUtils {
 
     public static boolean isMobileValid(String mobile) {
         return mobile.startsWith("01") && mobile.length() == 11;
+    }
+
+    public static int isUrlValid(String url) {
+        if(TextUtils.isEmpty(url)){
+            return R.string.required;
+        }else if(!Patterns.WEB_URL.matcher(url).matches()){
+            return R.string.invalid;
+        }else if(!url.matches("^(http|https)://.*$")){
+            return R.string._no_http;
+        }else {
+            return 0;
+        }
+    }
+
+    public static int isNameValid(String name) {
+        if(TextUtils.isEmpty(name)){
+            return R.string.required;
+        }else if(name.length()<3 || !name.matches("[a-zA-Z]+")) {
+            return R.string.invalid;
+        }else {
+            return 0;
+        }
     }
 
     public static String loadJSONFromAsset(Context context, String jsonFileName) throws IOException {

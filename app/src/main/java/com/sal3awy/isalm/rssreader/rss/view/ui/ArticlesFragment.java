@@ -30,7 +30,7 @@ import java.util.List;
 
 import javax.inject.Inject;
 
-public class ArticlesFragment extends BaseFragment<FragmentArticlesBinding> implements ArticlesCallback {
+public class ArticlesFragment extends BaseFragment<FragmentArticlesBinding, ArticlesViewModel> implements ArticlesCallback {
 
     @Inject
     ArticlesViewModel viewModel;
@@ -50,32 +50,6 @@ public class ArticlesFragment extends BaseFragment<FragmentArticlesBinding> impl
             providerLink = getArguments().getString(PROVIDER_KEY);
             getArticles();
         }
-        observeErrorMessage();
-        observeLoading();
-    }
-
-    private void observeErrorMessage() {
-        viewModel.getErrorMessage().observe(this, new Observer<String>() {
-            @Override
-            public void onChanged(@Nullable String message) {
-                if(!TextUtils.isEmpty(message)){
-                    showSnakeBar(message);
-                }
-            }
-        });
-    }
-
-    private void observeLoading() {
-        viewModel.getIsLoading().observe(this, new Observer<Boolean>() {
-            @Override
-            public void onChanged(@Nullable Boolean isLoading) {
-                if (isLoading != null && isLoading) {
-                    showLoading();
-                } else {
-                    hideLoading();
-                }
-            }
-        });
     }
 
     public static ArticlesFragment newInstance(String providerLink) {
@@ -89,6 +63,11 @@ public class ArticlesFragment extends BaseFragment<FragmentArticlesBinding> impl
     @Override
     public int getLayoutId() {
         return R.layout.fragment_articles;
+    }
+
+    @Override
+    public ArticlesViewModel getViewModel() {
+        return viewModel;
     }
 
 
